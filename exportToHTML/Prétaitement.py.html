@@ -1,0 +1,185 @@
+<html>
+<head>
+<title>Prétaitement.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #6aab73;}
+.s4 { color: #7a7e85;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Prétaitement.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">os</span>
+<span class="s1">os</span><span class="s2">.</span><span class="s1">environ</span><span class="s2">[</span><span class="s3">'TCL_LIBRARY'</span><span class="s2">] = </span><span class="s3">r'C:\Users\DELL\AppData\Local\Programs\Python\Python313\tcl\tcl8.6'</span>
+<span class="s1">os</span><span class="s2">.</span><span class="s1">environ</span><span class="s2">[</span><span class="s3">'TK_LIBRARY'</span><span class="s2">] = </span><span class="s3">r'C:\Users\DELL\AppData\Local\Programs\Python\Python313\tcl\tk8.6'</span>
+
+<span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">from </span><span class="s1">sklearn</span><span class="s2">.</span><span class="s1">preprocessing </span><span class="s0">import </span><span class="s1">LabelEncoder</span><span class="s2">, </span><span class="s1">StandardScaler</span>
+<span class="s0">import </span><span class="s1">seaborn </span><span class="s0">as </span><span class="s1">sns</span>
+<span class="s0">import </span><span class="s1">matplotlib</span><span class="s2">.</span><span class="s1">pyplot </span><span class="s0">as </span><span class="s1">plt</span>
+<span class="s0">from </span><span class="s1">sklearn</span><span class="s2">.</span><span class="s1">linear_model </span><span class="s0">import </span><span class="s1">BayesianRidge</span>
+
+
+<span class="s1">url </span><span class="s2">= </span><span class="s3">r&quot;C:\projet tutoré\IMMOBILIER.xlsx&quot;</span>
+<span class="s1">data </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">read_excel</span><span class="s2">(</span><span class="s1">url</span><span class="s2">)</span>
+
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;Aperçu des données :&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">data</span><span class="s2">.</span><span class="s1">head</span><span class="s2">())</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;</span><span class="s0">\n</span><span class="s3">Informations sur les données :&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">data</span><span class="s2">.</span><span class="s1">info</span><span class="s2">())</span>
+
+
+<span class="s4"># 3. Gestion des valeurs manquantes</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;</span><span class="s0">\n</span><span class="s3">Valeurs manquantes par colonne :&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">data</span><span class="s2">.</span><span class="s1">isnull</span><span class="s2">().</span><span class="s1">sum</span><span class="s2">())</span>
+
+<span class="s4"># Supprimer les colonnes avec trop de valeurs manquantes (si &gt;70%)</span>
+<span class="s1">data </span><span class="s2">= </span><span class="s1">data</span><span class="s2">.</span><span class="s1">loc</span><span class="s2">[:, </span><span class="s1">data</span><span class="s2">.</span><span class="s1">isnull</span><span class="s2">().</span><span class="s1">mean</span><span class="s2">() &lt; </span><span class="s5">0.7</span><span class="s2">]</span>
+
+<span class="s4"># Remplacer les valeurs manquantes restantes</span>
+<span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">data</span><span class="s2">.</span><span class="s1">select_dtypes</span><span class="s2">(</span><span class="s1">include</span><span class="s2">=[</span><span class="s3">'int64'</span><span class="s2">, </span><span class="s3">'float64'</span><span class="s2">]).</span><span class="s1">columns</span><span class="s2">:</span>
+    <span class="s1">data</span><span class="s2">[</span><span class="s1">col</span><span class="s2">].</span><span class="s1">fillna</span><span class="s2">(</span><span class="s1">data</span><span class="s2">[</span><span class="s1">col</span><span class="s2">].</span><span class="s1">median</span><span class="s2">())  </span><span class="s4"># Remplir avec la médiane pour les colonnes numériques</span>
+<span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">data</span><span class="s2">.</span><span class="s1">select_dtypes</span><span class="s2">(</span><span class="s1">include</span><span class="s2">=[</span><span class="s3">'object'</span><span class="s2">]).</span><span class="s1">columns</span><span class="s2">:</span>
+    <span class="s1">data</span><span class="s2">[</span><span class="s1">col</span><span class="s2">].</span><span class="s1">fillna</span><span class="s2">(</span><span class="s1">data</span><span class="s2">[</span><span class="s1">col</span><span class="s2">].</span><span class="s1">mode</span><span class="s2">()[</span><span class="s5">0</span><span class="s2">])  </span><span class="s4"># Remplir avec la valeur la plus fréquente pour les colonnes catégoriques</span>
+
+<span class="s4"># 4. Détection et suppression des doublons</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;</span><span class="s0">\n</span><span class="s3">Nombre de doublons : </span><span class="s0">{</span><span class="s1">data</span><span class="s2">.</span><span class="s1">duplicated</span><span class="s2">().</span><span class="s1">sum</span><span class="s2">()</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">data </span><span class="s2">= </span><span class="s1">data</span><span class="s2">.</span><span class="s1">drop_duplicates</span><span class="s2">()</span>
+
+<span class="s4"># 5. Encodage des variables catégoriques</span>
+<span class="s1">label_encoder </span><span class="s2">= </span><span class="s1">LabelEncoder</span><span class="s2">()</span>
+<span class="s0">for </span><span class="s1">col </span><span class="s0">in </span><span class="s1">data</span><span class="s2">.</span><span class="s1">select_dtypes</span><span class="s2">(</span><span class="s1">include</span><span class="s2">=[</span><span class="s3">'object'</span><span class="s2">]).</span><span class="s1">columns</span><span class="s2">:</span>
+    <span class="s1">data</span><span class="s2">[</span><span class="s1">col</span><span class="s2">] = </span><span class="s1">label_encoder</span><span class="s2">.</span><span class="s1">fit_transform</span><span class="s2">(</span><span class="s1">data</span><span class="s2">[</span><span class="s1">col</span><span class="s2">])</span>
+
+<span class="s4"># Suppression des outliers avec la méthode de l'IQR</span>
+<span class="s1">numerical_columns </span><span class="s2">= </span><span class="s1">data</span><span class="s2">.</span><span class="s1">select_dtypes</span><span class="s2">(</span><span class="s1">include</span><span class="s2">=[</span><span class="s3">&quot;number&quot;</span><span class="s2">])</span>
+<span class="s1">Q1 </span><span class="s2">= </span><span class="s1">numerical_columns</span><span class="s2">.</span><span class="s1">quantile</span><span class="s2">(</span><span class="s5">0.05</span><span class="s2">)</span>
+<span class="s1">Q3 </span><span class="s2">= </span><span class="s1">numerical_columns</span><span class="s2">.</span><span class="s1">quantile</span><span class="s2">(</span><span class="s5">0.99</span><span class="s2">)</span>
+<span class="s1">IQR </span><span class="s2">= </span><span class="s1">Q3 </span><span class="s2">- </span><span class="s1">Q1</span>
+
+<span class="s1">outlier_condition </span><span class="s2">= ((</span><span class="s1">numerical_columns </span><span class="s2">&lt; (</span><span class="s1">Q1 </span><span class="s2">- </span><span class="s5">1.5 </span><span class="s2">* </span><span class="s1">IQR</span><span class="s2">)) | (</span><span class="s1">numerical_columns </span><span class="s2">&gt; (</span><span class="s1">Q3 </span><span class="s2">+ </span><span class="s5">1.5 </span><span class="s2">* </span><span class="s1">IQR</span><span class="s2">)))</span>
+<span class="s1">data </span><span class="s2">= </span><span class="s1">data</span><span class="s2">[~</span><span class="s1">outlier_condition</span><span class="s2">.</span><span class="s1">any</span><span class="s2">(</span><span class="s1">axis</span><span class="s2">=</span><span class="s5">1</span><span class="s2">)]</span>
+
+<span class="s1">print</span><span class="s2">(</span><span class="s1">data</span><span class="s2">.</span><span class="s1">shape</span><span class="s2">)</span>
+
+<span class="s4"># 7. Mise à l’échelle des colonnes numériques</span>
+<span class="s1">scaler </span><span class="s2">= </span><span class="s1">StandardScaler</span><span class="s2">()</span>
+<span class="s1">numeric_cols </span><span class="s2">= </span><span class="s1">data</span><span class="s2">.</span><span class="s1">select_dtypes</span><span class="s2">(</span><span class="s1">include</span><span class="s2">=[</span><span class="s3">'int64'</span><span class="s2">, </span><span class="s3">'float64'</span><span class="s2">]).</span><span class="s1">columns</span>
+<span class="s1">data</span><span class="s2">[</span><span class="s1">numeric_cols</span><span class="s2">] = </span><span class="s1">scaler</span><span class="s2">.</span><span class="s1">fit_transform</span><span class="s2">(</span><span class="s1">data</span><span class="s2">[</span><span class="s1">numeric_cols</span><span class="s2">])</span>
+
+<span class="s4"># 8. Analyse exploratoire (EDA)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">&quot;</span><span class="s0">\n</span><span class="s3">Statistiques descriptives :&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">data</span><span class="s2">.</span><span class="s1">describe</span><span class="s2">())</span>
+<span class="s4"># Visualiser les distributions des données numériques</span>
+
+<span class="s1">data</span><span class="s2">.</span><span class="s1">hist</span><span class="s2">(</span><span class="s1">bins</span><span class="s2">=</span><span class="s5">15</span><span class="s2">, </span><span class="s1">figsize</span><span class="s2">=(</span><span class="s5">15</span><span class="s2">, </span><span class="s5">10</span><span class="s2">))</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">suptitle</span><span class="s2">(</span><span class="s3">&quot;Distributions des colonnes numériques&quot;</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s5">16</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">grid</span><span class="s2">(</span><span class="s0">True</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+
+<span class="s4"># Augmenter les valeurs dans la heatmap</span>
+<span class="s1">correlation_matrix </span><span class="s2">= </span><span class="s1">data</span><span class="s2">.</span><span class="s1">corr</span><span class="s2">() * </span><span class="s5">1.2  </span><span class="s4"># Augmentation des valeurs</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">figure</span><span class="s2">(</span><span class="s1">figsize</span><span class="s2">=(</span><span class="s5">10</span><span class="s2">, </span><span class="s5">8</span><span class="s2">))</span>
+<span class="s1">sns</span><span class="s2">.</span><span class="s1">heatmap</span><span class="s2">(</span><span class="s1">correlation_matrix</span><span class="s2">, </span><span class="s1">annot</span><span class="s2">=</span><span class="s0">True</span><span class="s2">, </span><span class="s1">cmap</span><span class="s2">=</span><span class="s3">'coolwarm'</span><span class="s2">, </span><span class="s1">fmt</span><span class="s2">=</span><span class="s3">&quot;.2f&quot;</span><span class="s2">, </span><span class="s1">linewidths</span><span class="s2">=</span><span class="s5">0.5</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">title</span><span class="s2">(</span><span class="s3">&quot;Heatmap des corrélations (amplifiée)&quot;</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+
+<span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">from </span><span class="s1">sklearn</span><span class="s2">.</span><span class="s1">model_selection </span><span class="s0">import </span><span class="s1">train_test_split</span>
+
+<span class="s4"># Charger les données</span>
+<span class="s1">file_path </span><span class="s2">= </span><span class="s3">r&quot;C:\projet tutoré\IMMOBILIER.xlsx&quot;</span>
+<span class="s1">data </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">read_excel</span><span class="s2">(</span><span class="s1">file_path</span><span class="s2">)</span>
+
+
+<span class="s4"># Exemple d'encodage des variables catégorielles</span>
+<span class="s1">data_encoded </span><span class="s2">= </span><span class="s1">pd</span><span class="s2">.</span><span class="s1">get_dummies</span><span class="s2">(</span><span class="s1">data</span><span class="s2">, </span><span class="s1">drop_first</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+
+<span class="s4"># Vérification des premières lignes du DataFrame</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s1">data_encoded</span><span class="s2">.</span><span class="s1">head</span><span class="s2">())</span>
+
+<span class="s4"># Séparation des variables explicatives (X) et de la cible (y)</span>
+<span class="s1">X </span><span class="s2">= </span><span class="s1">data_encoded</span><span class="s2">.</span><span class="s1">drop</span><span class="s2">(</span><span class="s3">&quot;price&quot;</span><span class="s2">, </span><span class="s1">axis</span><span class="s2">=</span><span class="s5">1</span><span class="s2">)  </span><span class="s4"># Assurez-vous que &quot;price&quot; est la colonne cible</span>
+<span class="s1">y </span><span class="s2">= </span><span class="s1">data_encoded</span><span class="s2">[</span><span class="s3">&quot;price&quot;</span><span class="s2">]</span>
+
+<span class="s4"># Séparation des données en ensembles d'entraînement et de test</span>
+<span class="s1">X_train</span><span class="s2">, </span><span class="s1">X_test</span><span class="s2">, </span><span class="s1">y_train</span><span class="s2">, </span><span class="s1">y_test </span><span class="s2">= </span><span class="s1">train_test_split</span><span class="s2">(</span><span class="s1">X</span><span class="s2">, </span><span class="s1">y</span><span class="s2">, </span><span class="s1">test_size</span><span class="s2">=</span><span class="s5">0.2</span><span class="s2">, </span><span class="s1">random_state</span><span class="s2">=</span><span class="s5">42</span><span class="s2">)</span>
+
+<span class="s4"># Affichage des dimensions des ensembles</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Dimensions de X_train : </span><span class="s0">{</span><span class="s1">X_train</span><span class="s2">.</span><span class="s1">shape</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Dimensions de X_test : </span><span class="s0">{</span><span class="s1">X_test</span><span class="s2">.</span><span class="s1">shape</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Dimensions de y_train : </span><span class="s0">{</span><span class="s1">y_train</span><span class="s2">.</span><span class="s1">shape</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;Dimensions de y_test : </span><span class="s0">{</span><span class="s1">y_test</span><span class="s2">.</span><span class="s1">shape</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+
+
+
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">from </span><span class="s1">sklearn</span><span class="s2">.</span><span class="s1">model_selection </span><span class="s0">import </span><span class="s1">train_test_split</span>
+<span class="s0">from </span><span class="s1">xgboost </span><span class="s0">import </span><span class="s1">XGBRegressor</span>
+<span class="s0">from </span><span class="s1">sklearn</span><span class="s2">.</span><span class="s1">metrics </span><span class="s0">import </span><span class="s1">mean_squared_error</span><span class="s2">, </span><span class="s1">r2_score</span>
+
+
+
+
+<span class="s4"># Étape 2 : Séparer les variables d'entrée (X) et la variable cible (y)</span>
+<span class="s1">X </span><span class="s2">= </span><span class="s1">data_encoded</span><span class="s2">.</span><span class="s1">drop</span><span class="s2">(</span><span class="s3">'price'</span><span class="s2">, </span><span class="s1">axis</span><span class="s2">=</span><span class="s5">1</span><span class="s2">)  </span><span class="s4"># 'price' est la colonne cible (prix immobilier)</span>
+<span class="s1">y </span><span class="s2">= </span><span class="s1">data_encoded</span><span class="s2">[</span><span class="s3">'price'</span><span class="s2">]  </span><span class="s4"># C'est la cible que nous voulons prédire</span>
+
+<span class="s4"># Étape 3 : Séparer les données en ensembles d'entraînement et de test</span>
+<span class="s1">X_train</span><span class="s2">, </span><span class="s1">X_test</span><span class="s2">, </span><span class="s1">y_train</span><span class="s2">, </span><span class="s1">y_test </span><span class="s2">= </span><span class="s1">train_test_split</span><span class="s2">(</span><span class="s1">X</span><span class="s2">, </span><span class="s1">y</span><span class="s2">, </span><span class="s1">test_size</span><span class="s2">=</span><span class="s5">0.2</span><span class="s2">, </span><span class="s1">random_state</span><span class="s2">=</span><span class="s5">42</span><span class="s2">)</span>
+
+<span class="s4"># Étape 4 : Initialiser et entraîner le modèle XGBoost</span>
+<span class="s1">xgb_model </span><span class="s2">= </span><span class="s1">XGBRegressor</span><span class="s2">(</span>
+    <span class="s1">n_estimators</span><span class="s2">=</span><span class="s5">100</span><span class="s2">,  </span><span class="s4"># Nombre d'arbres</span>
+    <span class="s1">learning_rate</span><span class="s2">=</span><span class="s5">0.1</span><span class="s2">,  </span><span class="s4"># Taux d'apprentissage</span>
+    <span class="s1">max_depth</span><span class="s2">=</span><span class="s5">6</span><span class="s2">,        </span><span class="s4"># Profondeur des arbres</span>
+    <span class="s1">subsample</span><span class="s2">=</span><span class="s5">0.8</span><span class="s2">,      </span><span class="s4"># Fraction des données utilisées pour chaque arbre</span>
+    <span class="s1">colsample_bytree</span><span class="s2">=</span><span class="s5">0.8  </span><span class="s4"># Fraction des caractéristiques utilisées pour chaque arbre</span>
+<span class="s2">)</span>
+
+<span class="s4"># Entraîner le modèle sur les données d'entraînement</span>
+<span class="s1">xgb_model</span><span class="s2">.</span><span class="s1">fit</span><span class="s2">(</span><span class="s1">X_train</span><span class="s2">, </span><span class="s1">y_train</span><span class="s2">)</span>
+
+<span class="s4"># Étape 5 : Prédictions sur les données de test</span>
+<span class="s1">y_pred_xgb </span><span class="s2">= </span><span class="s1">xgb_model</span><span class="s2">.</span><span class="s1">predict</span><span class="s2">(</span><span class="s1">X_test</span><span class="s2">)</span>
+
+<span class="s4"># Calcul des métriques de performance</span>
+<span class="s1">rmse_xgb </span><span class="s2">= </span><span class="s1">np</span><span class="s2">.</span><span class="s1">sqrt</span><span class="s2">(</span><span class="s1">mean_squared_error</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">, </span><span class="s1">y_pred_xgb</span><span class="s2">))</span>
+<span class="s1">r2_xgb </span><span class="s2">= </span><span class="s1">r2_score</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">, </span><span class="s1">y_pred_xgb</span><span class="s2">)</span>
+
+<span class="s4"># Affichage des résultats</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;--- XGBoost Regression ---&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;RMSE: </span><span class="s0">{</span><span class="s1">rmse_xgb</span><span class="s0">:</span><span class="s3">.2f</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+<span class="s1">print</span><span class="s2">(</span><span class="s3">f&quot;R²: </span><span class="s0">{</span><span class="s1">r2_xgb</span><span class="s0">:</span><span class="s3">.2f</span><span class="s0">}</span><span class="s3">&quot;</span><span class="s2">)</span>
+
+<span class="s4"># Visualisation des résultats</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">figure</span><span class="s2">(</span><span class="s1">figsize</span><span class="s2">=(</span><span class="s5">8</span><span class="s2">, </span><span class="s5">6</span><span class="s2">))</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">scatter</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">, </span><span class="s1">y_pred_xgb</span><span class="s2">, </span><span class="s1">color</span><span class="s2">=</span><span class="s3">'blue'</span><span class="s2">, </span><span class="s1">alpha</span><span class="s2">=</span><span class="s5">0.5</span><span class="s2">)</span>
+
+<span class="s4"># Ajouter des annotations pour afficher les valeurs près des points</span>
+<span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range</span><span class="s2">(</span><span class="s1">len</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">)):</span>
+    <span class="s1">plt</span><span class="s2">.</span><span class="s1">text</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">.</span><span class="s1">iloc</span><span class="s2">[</span><span class="s1">i</span><span class="s2">], </span><span class="s1">y_pred_xgb</span><span class="s2">[</span><span class="s1">i</span><span class="s2">], </span><span class="s3">f'</span><span class="s0">{</span><span class="s1">y_pred_xgb</span><span class="s2">[</span><span class="s1">i</span><span class="s2">]</span><span class="s0">:</span><span class="s3">.2f</span><span class="s0">}</span><span class="s3">'</span><span class="s2">, </span><span class="s1">fontsize</span><span class="s2">=</span><span class="s5">8</span><span class="s2">, </span><span class="s1">alpha</span><span class="s2">=</span><span class="s5">0.7</span><span class="s2">)</span>
+
+<span class="s4"># Tracer une ligne de référence pour les valeurs réelles égales aux valeurs prédites</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">plot</span><span class="s2">([</span><span class="s1">min</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">), </span><span class="s1">max</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">)], [</span><span class="s1">min</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">), </span><span class="s1">max</span><span class="s2">(</span><span class="s1">y_test</span><span class="s2">)], </span><span class="s1">color</span><span class="s2">=</span><span class="s3">'red'</span><span class="s2">, </span><span class="s1">linestyle</span><span class="s2">=</span><span class="s3">'--'</span><span class="s2">)</span>
+
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">xlabel</span><span class="s2">(</span><span class="s3">'Valeurs réelles'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">ylabel</span><span class="s2">(</span><span class="s3">'Valeurs prédites'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">title</span><span class="s2">(</span><span class="s3">'XGBoost - Comparaison des valeurs réelles et prédites'</span><span class="s2">)</span>
+<span class="s1">plt</span><span class="s2">.</span><span class="s1">show</span><span class="s2">()</span>
+
+
+
+
+</pre>
+</body>
+</html>
